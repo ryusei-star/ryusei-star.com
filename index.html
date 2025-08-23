@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>りゅうせい</title>
+    <link rel="icon" href="https://img.ryusei-star.com/ryusei-icon-circle.webp" type="image/webp">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #c0d1e2;
+            --secondary-color: #3b82f6;
+            --accent-color: #3b82f6;
+            --text-color: #d0dce8;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --hover-color: #2563eb;
+            --border-color: rgba(192, 209, 226, 0.2);
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            max-width: 100%;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -10;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+            .bg-animation span {
+                position: absolute;
+                display: block;
+                pointer-events: none;
+                width: 20px;
+                height: 20px;
+                background: rgba(139, 92, 246, 0.15);
+                animation: move 3s linear infinite;
+                border-radius: 50%;
+            }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -2;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 40%, rgba(15, 23, 42, 0) 70%);
+            z-index: -3;
+            animation: pulse-glow 8s infinite alternate;
+        }
+
+        .bg-stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -4;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: var(--opacity);
+            }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), transparent);
+            transform: rotate(var(--angle));
+            animation: shooting var(--duration) infinite linear;
+            animation-delay: var(--delay);
+            opacity: 0;
+            top: var(--top);
+            left: var(--left);
+        }
+
+        @keyframes shooting {
+            0% {
+                opacity: 0;
+                transform: translateX(0) rotate(var(--angle));
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            20% {
+                opacity: 0;
+                transform: translateX(300px) rotate(var(--angle));
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(300px) rotate(var(--angle));
+            }
+        }
+
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            animation: grid-animation 20s infinite linear;
+            z-index: -5;
+        }
+
+        @keyframes grid-animation {
+            0% {
+                transform: rotateX(75deg) translateY(0);
+            }
+
+            100% {
+                transform: rotateX(75deg) translateY(50px);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        @keyframes move {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            perspective: 1000px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+            margin: 0;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .profile-img-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 20px;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            animation: float 6s ease-in-out infinite;
+            border: 3px solid #3b82f6;
+        }
+
+        .profile-img-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0.4;
+            z-index: 1;
+            animation: pulse-avatar 3s infinite alternate;
+        }
+
+        @keyframes pulse-avatar {
+            0% {
+                opacity: 0.3;
+                width: 130px;
+                height: 130px;
+            }
+
+            100% {
+                opacity: 0.5;
+                width: 140px;
+                height: 140px;
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .profile-name {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #c0d1e2;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+
+        .profile-username {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            animation: fadeInUp 1.2s ease-out;
+            letter-spacing: 1px;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            margin-bottom: 30px;
+            padding: 20px;
+            text-align: center;
+            background-color: rgba(30, 41, 59, 0.7);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 1.4s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            line-height: 1.8;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+
+            .profile-bio::before,
+            .profile-bio::after {
+                content: none;
+            }
+
+        @keyframes shine {
+            0% {
+                top: -50%;
+                left: -50%;
+            }
+
+            100% {
+                top: 150%;
+                left: 150%;
+            }
+        }
+
+        .profile-bio a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+            .profile-bio a:hover {
+                color: var(--accent-color);
+            }
+
+            .profile-bio a::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                bottom: -2px;
+                left: 0;
+                background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+                transform: scaleX(0);
+                transform-origin: bottom right;
+                transition: transform 0.3s ease;
+            }
+
+            .profile-bio a:hover::after {
+                transform: scaleX(1);
+                transform-origin: bottom left;
+            }
+
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            perspective: 1000px;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            width: calc(50% - 10px);
+            padding: 12px;
+            background-color: rgba(30, 41, 59, 0.7);
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.5s forwards;
+            animation-delay: calc(0.1s * var(--i));
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+            .link-item::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+                transition: 0.5s;
+            }
+
+            .link-item:hover::before {
+                left: 100%;
+            }
+
+            .link-item::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform 0.5s ease;
+            }
+
+            .link-item:hover::after {
+                transform: scaleX(1);
+            }
+
+            .link-item:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(139, 92, 246, 0.2);
+                background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(30, 41, 59, 0.7));
+                border-color: rgba(139, 92, 246, 0.3);
+            }
+
+        .link-icon {
+            font-size: 20px;
+            margin-right: 8px;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .link-item:hover .link-icon {
+            transform: scale(1.2);
+        }
+
+        .link-text {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .discord {
+            color: #5865F2;
+        }
+
+        .twitter {
+            color: #1DA1F2;
+        }
+
+        .bluesky {
+            color: #1DA1F2;
+        }
+
+        .github {
+            color: #ffffff;
+        }
+
+        .youtube {
+            color: #FF0000;
+        }
+
+        .twitch {
+            color: #9146FF;
+        }
+
+        .tiktok {
+            color: #ffffff;
+        }
+
+        .spotify {
+            color: #1DB954;
+        }
+
+        .xbox {
+            color: #107C10;
+        }
+
+        .link-item:hover .link-icon {
+            color: white !important;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+            .theme-toggle:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.3);
+            }
+
+            .theme-toggle i {
+                font-size: 20px;
+                color: var(--text-color);
+            }
+
+        body.light-mode {
+            --primary-color: #8b5cf6;
+            --secondary-color: #6366f1;
+            --accent-color: #ec4899;
+            --text-color: #1f2937;
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --hover-color: #4f46e5;
+            --border-color: rgba(139, 92, 246, 0.2);
+        }
+
+            body.light-mode .bg-grid {
+                background-image: linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            }
+
+            body.light-mode .cyber-grid {
+                background: linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+            }
+
+            body.light-mode .bg-glow {
+                background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 40%, rgba(241, 245, 249, 0) 70%);
+            }
+
+            body.light-mode .star {
+                background: #8b5cf6;
+            }
+
+            body.light-mode .shooting-star {
+                background: linear-gradient(90deg, rgba(139, 92, 246, 0.8), transparent);
+            }
+
+            body.light-mode .profile-username {
+                color: #64748b;
+            }
+
+            body.light-mode .profile-bio {
+                background-color: rgba(255, 255, 255, 0.7);
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            }
+
+            body.light-mode .link-item {
+                background-color: rgba(255, 255, 255, 0.7);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            }
+
+                body.light-mode .link-item:hover {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(139, 92, 246, 0.2);
+                }
+
+            body.light-mode .theme-toggle {
+                background: rgba(255, 255, 255, 0.7);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+
+                body.light-mode .theme-toggle:hover {
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 0 15px rgba(139, 92, 246, 0.3);
+                }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .x-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            fill: #1DA1F2;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .link-item:hover .x-icon {
+            fill: white;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .profile-img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-name {
+                font-size: 28px;
+            }
+
+            .profile-bio {
+                font-size: 15px;
+                padding: 15px;
+            }
+
+            .link-item {
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 500px) and (max-width: 600px) {
+            .link-item {
+                width: calc(50% - 10px);
+            }
+        }
+
+        @media (max-width: 499px) {
+            .link-item {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div id="canvas-container"></div>
+    <div class="bg-animation" id="bgAnimation"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-stars" id="bgStars"></div>
+    <div class="cyber-grid"></div>
+
+    <div class="container" id="container">
+        <div class="profile" id="profile">
+            <div class="profile-img-container">
+                <div class="profile-img-glow"></div>
+                <img src="https://img.ryusei-star.com/ryusei-icon-circle.webp" alt="りゅうせいのプロフィール画像" class="profile-img" id="profileImg">
+            </div>
+            <h1 class="profile-name" data-text="りゅうせい">りゅうせい</h1>
+            <p class="profile-username">@ryusei_star</p>
+
+            <div class="profile-bio" id="profileBio">
+                マイクラが好きです<br>
+                <a href="https://havenmc.jp" target="_blank">HavenMC</a>というサーバーを運営しています
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="https://discord.com/users/1276774559613325473" target="_blank" rel="noopener" class="link-item" style="--i:1">
+                <i class="fab fa-discord link-icon discord"></i>
+                <span class="link-text">Discord</span>
+            </a>
+
+            <a href="https://x.com/ryuseiryusei_sc" target="_blank" rel="noopener" class="link-item" style="--i:2">
+                <svg class="x-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                <span class="link-text">X (Twitter)</span>
+            </a>
+
+            <a href="https://bsky.app/profile/ryuseiryusei.bsky.social" target="_blank" rel="noopener" class="link-item" style="--i:3">
+                <svg class="x-icon" style="fill: #1DA1F2;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16.5v-7h2v7h-2zm0-9V7h2v2.5h-2z" />
+                </svg>
+                <span class="link-text">Bluesky</span>
+            </a>
+
+            <a href="https://github.com/ryusei-star" target="_blank" rel="noopener" class="link-item" style="--i:4">
+                <i class="fab fa-github link-icon github"></i>
+                <span class="link-text">GitHub</span>
+            </a>
+
+            <a href="https://www.youtube.com/channel/UCbPBS5ttRPFhx4070ffmBCg" target="_blank" rel="noopener" class="link-item" style="--i:5">
+                <i class="fab fa-youtube link-icon youtube"></i>
+                <span class="link-text">YouTube</span>
+            </a>
+
+            <a href="https://www.twitch.tv/ryuseiryusei123" target="_blank" rel="noopener" class="link-item" style="--i:6">
+                <i class="fab fa-twitch link-icon twitch"></i>
+                <span class="link-text">Twitch</span>
+            </a>
+
+            <a href="https://www.tiktok.com/@ryuseiryusei123" target="_blank" rel="noopener" class="link-item" style="--i:7">
+                <i class="fab fa-tiktok link-icon tiktok"></i>
+                <span class="link-text">TikTok</span>
+            </a>
+
+            <a href="https://open.spotify.com/user/31n4tq4sllr5kf3lgh3zpxwdg2oi" target="_blank" rel="noopener" class="link-item" style="--i:8">
+                <i class="fab fa-spotify link-icon spotify"></i>
+                <span class="link-text">Spotify</span>
+            </a>
+
+            <a href="https://www.xbox.com/play/user/ryuseiryusei123" target="_blank" rel="noopener" class="link-item" style="--i:9">
+                <i class="fab fa-xbox link-icon xbox"></i>
+                <span class="link-text">Xbox</span>
+            </a>
+
+            <a href="https://havenmc.jp" target="_blank" rel="noopener" class="link-item" style="--i:10">
+                <i class="fas fa-server link-icon" style="color: var(--primary-color);"></i>
+                <span class="link-text">HavenMC 公式サイト</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+    /*
+            function init3DBackground() {
+            const container = document.getElementById('canvas-container');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+
+            renderer.setSize(width, height);
+            renderer.setClearColor(0x000000, 0);
+            container.appendChild(renderer.domElement);
+
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1000;
+
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for (let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 5;
+    }
+    */
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.005,
+                color: 0x8b5cf6,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            camera.position.z = 2;
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                particlesMesh.rotation.x += 0.0005;
+                particlesMesh.rotation.y += 0.0005;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                const newWidth = window.innerWidth;
+                const newHeight = window.innerHeight;
+
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(newWidth, newHeight);
+            });
+        }
+
+        function createBgAnimation() {
+            const bgAnimation = document.getElementById('bgAnimation');
+            const count = 15;
+
+            for (let i = 0; i < count; i++) {
+                const span = document.createElement('span');
+                const size = Math.random() * 50 + 10;
+
+                span.style.width = `${size}px`;
+                span.style.height = `${size}px`;
+                span.style.top = `${Math.random() * 100}%`;
+                span.style.left = `${Math.random() * 100}%`;
+                span.style.animationDuration = `${Math.random() * 10 + 5}s`;
+                span.style.animationDelay = `${Math.random() * 5}s`;
+
+                bgAnimation.appendChild(span);
+            }
+        }
+
+        function createStars() {
+            const bgStars = document.getElementById('bgStars');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+                star.style.setProperty('--delay', `${Math.random() * 5}s`);
+                star.style.setProperty('--opacity', `${Math.random() * 0.7 + 0.3}`);
+
+                bgStars.appendChild(star);
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.classList.add('shooting-star');
+
+                shootingStar.style.setProperty('--top', `${Math.random() * 50}%`);
+                shootingStar.style.setProperty('--left', `${Math.random() * 70}%`);
+                shootingStar.style.setProperty('--angle', `${Math.random() * 60 - 30}deg`);
+                shootingStar.style.setProperty('--duration', `${Math.random() * 10 + 10}s`);
+                shootingStar.style.setProperty('--delay', `${Math.random() * 20}s`);
+
+                bgStars.appendChild(shootingStar);
+            }
+        }
+
+        function initTiltEffect() {
+            const container = document.getElementById('container');
+
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const xAxis = (centerX - x) / 25;
+                const yAxis = (centerY - y) / 25;
+
+                container.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${-yAxis}deg)`;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                container.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg)';
+            });
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const icon = themeToggle.querySelector('i');
+
+        localStorage.setItem('theme', 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        document.querySelectorAll('a[target="_blank"]').forEach(link => {
+            link.setAttribute('rel', 'noopener');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                init3DBackground();
+            } catch (e) {
+                console.error('3D背景の初期化に失敗しました:', e);
+            }
+
+            createBgAnimation();
+            createStars();
+            initTiltEffect();
+
+            const links = document.querySelectorAll('.link-item');
+            links.forEach((link, index) => {
+                link.style.setProperty('--i', index + 1);
+            });
+        });</script>
+</body>
+</html>
